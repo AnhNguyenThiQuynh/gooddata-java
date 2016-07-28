@@ -3,35 +3,57 @@
  */
 package com.gooddata.md.report;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+
+import java.io.IOException;
 
 /**
  * Grid element
- * (metricGroup | URI | AttributeInGrid ... URI is allowed for backward compatibility, metricGroup can be maximally
+ * (metricGroup | AttributeInGrid ... metricGroup can be maximally
  * one time in rows or columns)
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class GridElement {
+public interface GridElement {
 
-    private final String uri;
-    private final String alias;
+    class Serializer extends JsonSerializer<GridElement> {
 
-    @JsonCreator
-    public GridElement(@JsonProperty("uri") String uri, @JsonProperty("alias") String alias) {
-        this.uri = uri;
-        this.alias = alias;
+        @Override
+        public void serialize(GridElement value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            if (value instanceof AttributeInGrid) {
+                serializers.defaultSerializeValue(value, gen);
+            } else if (value instanceof MetricGroup){
+                gen.writeString(((MetricGroup) value).getValue());
+            } else {
+                throw new JsonGenerationException("Unsupported kind of GridElement: " + value.getClass().getName(), gen);
+            }
+        }
     }
 
-    public String getUri() {
-        return uri;
+    class Deserializer extends JsonDeserializer<GridElement> {
+
+        @Override
+        public GridElement deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+            switch (jp.currentToken()) {
+                case VALUE_STRING:
+                    final String textValue = ctxt.readValue(jp, String.class);
+                    if (MetricGroup.equals(textValue)) {
+                        return MetricGroup.instance();
+                    } else {
+                        throw ctxt.mappingException("Unknown string representation of GridElement: %s", textValue);
+                    }
+                case START_OBJECT:
+                    return ctxt.readValue(jp, AttributeInGrid.class);
+                default:
+                    throw ctxt.mappingException("Unknown type of GridElement");
+            }
+        }
     }
 
-    public String getAlias() {
-        return alias;
-    }
+
 
 }

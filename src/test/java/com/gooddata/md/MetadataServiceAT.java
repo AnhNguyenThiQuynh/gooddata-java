@@ -13,10 +13,13 @@ import com.gooddata.md.report.AttributeInGrid;
 import com.gooddata.md.report.Filter;
 import com.gooddata.md.report.GridElement;
 import com.gooddata.md.report.GridReportDefinitionContent;
+import com.gooddata.md.report.MetricElement;
+import com.gooddata.md.report.MetricGroup;
 import com.gooddata.md.report.Report;
 import org.joda.time.LocalDate;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,9 +63,9 @@ public class MetadataServiceAT extends AbstractGoodDataAT {
 
         reportDefinition = md.createObj(project, GridReportDefinitionContent.create(
                 "Department avg shoe size",
-                asList("metricGroup"),
+                asList(MetricGroup.instance()),
                 asList(new AttributeInGrid(attr.getDefaultDisplayForm().getUri())),
-                asList(new GridElement(metric.getUri(), "Avg shoe size")),
+                asList(new MetricElement(metric.getUri(), "Avg shoe size")),
                 asList(new Filter("(SELECT [" + metric.getUri() + "]) >= 0"))
         ));
         report = md.createObj(project, new Report(reportDefinition.getTitle(), reportDefinition));

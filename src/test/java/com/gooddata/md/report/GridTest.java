@@ -4,6 +4,7 @@
 package com.gooddata.md.report;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.CoreMatchers;
 import org.testng.annotations.Test;
 
 import java.util.Collection;
@@ -29,11 +30,11 @@ public class GridTest {
 
         assertThat(grid.getColumns(), is(notNullValue()));
         assertThat(grid.getColumns(), hasSize(1));
-        assertThat(grid.getColumns().iterator().next(), is("metricGroup"));
+        assertThat(grid.getColumns().iterator().next(), CoreMatchers.<GridElement>is(MetricGroup.instance()));
 
         assertThat(grid.getRows(), is(notNullValue()));
         assertThat(grid.getRows(), hasSize(1));
-        final AttributeInGrid attrInGrid = grid.getRows().iterator().next();
+        final AttributeInGrid attrInGrid = (AttributeInGrid) grid.getRows().iterator().next();
         assertThat(attrInGrid.getAlias(), is("attr"));
 
         assertThat(grid.getMetrics(), is(notNullValue()));
@@ -54,11 +55,13 @@ public class GridTest {
         colWidths.put("width", 343);
         sort.put("columns", Collections.<String>emptyList());
         sort.put("rows", Collections.<String>emptyList());
-        final Grid grid = new Grid(asList("metricGroup"),
+        final Grid grid = new Grid(
+                asList(MetricGroup.instance()),
                 asList(new AttributeInGrid("/gdc/md/PROJECT_ID/obj/ATTR_ID",
                         asList((Collection<String>)Collections.<String>emptyList()), "attr")),
-                asList(new GridElement("/gdc/md/PROJECT_ID/obj/METR_ID", "metr")), sort, asList(colWidths));
+                asList(new MetricElement("/gdc/md/PROJECT_ID/obj/METR_ID", "metr")), sort, asList(colWidths));
 
+        new ObjectMapper().writeValueAsString(grid);
         assertThat(grid, serializesToJson("/md/report/grid-input.json"));
     }
 
