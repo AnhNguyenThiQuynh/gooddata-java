@@ -57,8 +57,7 @@ public class GridTest {
         sort.put("rows", Collections.<String>emptyList());
         final Grid grid = new Grid(
                 asList(MetricGroup.instance()),
-                asList(new AttributeInGrid("/gdc/md/PROJECT_ID/obj/ATTR_ID",
-                        asList((Collection<String>)Collections.<String>emptyList()), "attr")),
+                asList(new AttributeInGrid("/gdc/md/PROJECT_ID/obj/ATTR_ID", "attr")),
                 asList(new MetricElement("/gdc/md/PROJECT_ID/obj/METR_ID", "metr")), sort, asList(colWidths));
 
         new ObjectMapper().writeValueAsString(grid);
